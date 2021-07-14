@@ -14,14 +14,44 @@
         die("Connection failed: " . $conn->connect_error);
     }
 
-    $sql = "SELECT * FROM websites";
-    $result = $conn->query($sql);
-
-    if(isset($_POST['submit']))
+    if(isset($_GET['p']))
     {
-        $term = $_POST["term"];
-        $sql2 = "SELECT * FROM tblprograms WHERE title LIKE '%$term%' OR description LIKE '%$term%' or keywords LIKE '%$term%'";
-        $searchresult = $conn->query($sql2);
+        $page = $_GET['p'];
+
+        $limit = 12;
+
+        $page = ($page - 1) * $limit;
+
+        $sql = "SELECT * FROM Posts LIMIT ".$limit." OFFSET ".$page." ORDER BY ID";
+
+        $sql = "SELECT * FROM websites LIMIT ".$limit." OFFSET ".$page."";
+        $result = $conn->query($sql);
+
+        if(isset($_POST['submit']))
+        {
+            $term = $_POST["term"];
+            $sql2 = "SELECT * FROM websites WHERE title LIKE '%$term%' OR description LIKE '%$term%' or keywords LIKE '%$term%' LIMIT ".$limit." OFFSET ".$page."";
+            $searchresult = $conn->query($sql2);
+        }
+    }
+
+    else
+    {
+        $page = '0';
+
+        $limit = 12;
+
+        $sql = "SELECT * FROM Posts LIMIT ".$limit." OFFSET ".$page." ORDER BY ID";
+
+        $sql = "SELECT * FROM websites LIMIT ".$limit." OFFSET ".$page."";
+        $result = $conn->query($sql);
+
+        if(isset($_POST['submit']))
+        {
+            $term = $_POST["term"];
+            $sql2 = "SELECT * FROM websites WHERE title LIKE '%$term%' OR description LIKE '%$term%' or keywords LIKE '%$term%' LIMIT ".$limit." OFFSET ".$page."";
+            $searchresult = $conn->query($sql2);
+        }
     }
 ?>
 <html lang="en">
@@ -71,7 +101,7 @@
 
                         else 
                         {
-                            echo "0 result";
+                            echo "0 results";
                         }
                     
                         $conn->close();
@@ -101,6 +131,37 @@
                     }
                 ?>
             </ul>
+            <?php                
+                if(isset($_POST['submit']))
+                {
+                    $term = $_POST["term"];
+                    $rowsql = "SELECT count(*) FROM websites WHERE title LIKE '%$term%' OR description LIKE '%$term%' or keywords LIKE '%$term%'";
+                    $rowresultsearched = $conn->query($rowsql);
+                    $row = $rowresultsearched->fetch_assoc();
+                    echo $row['count(*)']; //Will output the count of number of winners
+                }
+
+                else
+                {
+                    $rowsql = "SELECT count(*) FROM websites";
+                    $rowresult = $conn->query($rowsql);
+                    $row = $rowresult->fetch_assoc();
+                    echo $row['count(*)']; //Will output the count of number of winners
+                }
+
+                if(isset($_GET['p']))
+                {
+                    $p = $_GET['p'];
+                }
+
+                else
+                {
+                    $p = '1';
+                }
+
+                $totalpages = $rows/$limit;
+                //echo $totalpages;
+            ?>
         </div>
         <!-- Optional JavaScript; choose one of the two! -->
 
