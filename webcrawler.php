@@ -25,6 +25,18 @@
     while($row = mysqli_fetch_assoc($result)) 
     {
         $crawled[] = $row['url'];
+        echo "\e[91mRemoved: \e[36m".$row['url']."\e[39m from queue."."\n";
+    }
+
+    $file_contents = file('tocrawl.txt');
+
+    foreach($file_contents as $line)
+    {
+        if($line != "\n")
+        {
+            $crawling[] = $line;
+            echo "\e[32mAdded: \e[36m".trim($line)."\e[39m to queue."."\n";
+        }
     }
 
     libxml_use_internal_errors(true);
@@ -37,8 +49,9 @@
 
         $context = stream_context_create($options);
 
+        libxml_use_internal_errors(true);
         $doc = new DOMDocument();
-        @$doc->loadHTML(mb_convert_encoding(@file_get_contents($url, false, $context), 'HTML-ENTITIES', 'UTF-8'));
+        $doc->loadHTML(mb_convert_encoding(file_get_contents($url, false, $context), 'HTML-ENTITIES', 'UTF-8'));
         $doc->encoding = 'utf-8';
         libxml_use_internal_errors(false);
 
@@ -92,12 +105,22 @@
                     echo "Keywords: ".$keywords.""."\n";
                     echo "URL: ".$url.""."\n";
                     echo ""."\n";
+                    $file_contents = file_get_contents('tocrawl.txt');
+                    $file_contents = str_replace($url." ","",$file_contents);
+                    file_put_contents('tocrawl.txt',$file_contents);
                 } 
                 
                 else 
                 {
                     echo "Error: " . $sql . "<br>" . $conn->error;
                 }
+            }
+
+            else
+            {
+                $file_contents = file_get_contents('tocrawl.txt');
+                $file_contents = str_replace($url." ","",$file_contents);
+                file_put_contents('tocrawl.txt',$file_contents);
             }
         }
     }
@@ -111,8 +134,11 @@
 
         $context = stream_context_create($options);
 
+        $url = trim($url);
+
+        libxml_use_internal_errors(true);
         $doc = new DOMDocument();
-        @$doc->loadHTML(mb_convert_encoding(@file_get_contents($url, false, $context), 'HTML-ENTITIES', 'UTF-8'));
+        $doc->loadHTML(mb_convert_encoding(file_get_contents($url, false, $context), 'HTML-ENTITIES', 'UTF-8'));
         libxml_use_internal_errors(false);
 
         $linklist = $doc->getElementsByTagName("a");
@@ -165,10 +191,10 @@
             {
                 $crawled[] = $l;
                 $crawling[] = $l;
-                if(getDetails($l) != "")
-                { 
-                    echo getDetails($l)."\n";
-                }
+                $fp = fopen('tocrawl.txt', 'a');//opens file in append mode  
+                fwrite($fp, $l." "."\n");
+                fclose($fp);
+                getDetails($l);
             }
         }
         
@@ -179,7 +205,5 @@
         }
     }
 
-    followLinks($starturl);
-
-    print_r($crawled)
+    followLinks($crawling[0]);
 ?>
