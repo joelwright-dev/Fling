@@ -103,8 +103,6 @@
                         {
                             echo "0 results";
                         }
-                    
-                        $conn->close();
                     }
 
                     else
@@ -126,8 +124,6 @@
                         {
                             echo "0 results";
                         }
-                    
-                        $conn->close();
                     }
                 ?>
             </ul>
@@ -159,8 +155,10 @@
                     $p = '1';
                 }
 
-                $totalpages = $rows/$limit;
-                //echo $totalpages;
+                $totalpages = $row['count(*)']/$limit;
+                echo $totalpages;
+
+                $conn->close();
             ?>
         </div>
         <!-- Optional JavaScript; choose one of the two! -->
