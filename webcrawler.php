@@ -221,28 +221,41 @@
         return true;
     }
 
+    //Follow input URL
     function followLinks($url)
     {
+        //Get the global arrays
         global $crawled;
         global $crawling;
 
+        //Define header options
         $options = array('http'=>array('method'=>"GET", 'headers'=>"User-Agent: softSearch/0.1\n"));
 
+        //Create header context
         $context = stream_context_create($options);
 
+        //Remove whitespace from URL
         $url = trim($url);
 
+        //Surpress DOMDocument Errors - DOMDocument can't parse html5 and this results in many errors. This doesn't impact results
         libxml_use_internal_errors(true);
+        //Create a new DOMDocument object
         $doc = new DOMDocument();
+        //Load the URL to the DOMDocument object with UTF-8 encoding
         $doc->loadHTML(mb_convert_encoding(file_get_contents($url, false, $context), 'HTML-ENTITIES', 'UTF-8'));
+        //Unsurpress errors
         libxml_use_internal_errors(false);
 
+        //Get all a tags in the DOMDocument
         $linklist = $doc->getElementsByTagName("a");
 
+        //Loop through every link
         foreach($linklist as $link)
         {
+            //Get the URL of the a tag
             $l = $link->getAttribute("href");
 
+            //URL parsing - makes the URL a proper, parsable URL
             if(substr($l, 0, 1) == "/" && substr($l, 0, 2) != "//")
             {
                 $l = parse_url($url)["scheme"]."://".parse_url($url)["host"].$l;
@@ -283,46 +296,60 @@
                 $l = parse_url($url)["scheme"]."://".parse_url($url)["host"]."/".$l;
             }
 
+            //If the URL is allowed to be crawled
             if(robotsTXT($l))
             {
+                //If the URL hasn't already been crawled
                 if(!in_array($l, $crawled))
                 {
+                    //Add it to the crawled list
                     $crawled[] = $l;
+                    //Add it to the queue
                     $crawling[] = $l;
+                    //Append the link to the queue txt file
                     $fp = fopen('tocrawl.txt', 'a');
                     fwrite($fp, $l." "."\n");
                     fclose($fp);
+                    //Get the URL details
                     getDetails($l);
                 }
 
                 else
                 {
+                    //Tell the user the URL is already in queue
                     echo "\e[91m[ERROR] \e[39mCan't crawl \e[36m".$l."\n"."\e[91m[ERROR] \e[39mReason: Already in queue"."\n"; 
                 }
             }
 
             else
             {
+                //Tell the user the URL isn't allowed to be crawled
                 echo "\e[91m[ERROR] \e[39mCan't crawl \e[36m".$l."\n"."\e[91m[ERROR] \e[39mReason: Disallowed"."\n";
             }
         }
         
+        //Shift the array to the next URL
         array_shift($crawling);
+        //For every URL
         foreach ($crawling as $site)
         {
+            //Follow the URL
             followLinks($site);
         }
     }
 
+    //Check if the starting URL is allowed to be crawled
     if(robotsTXT($crawling[0]))
     {
+        //Crawl the URL
         echo "\e[32m[QUEUE] \e[39mCrawling \e[36m".$crawling[0]."\n";
         followLinks($crawling[0]);
     }
 
     else
     {
+        //Notify the user that the starting URL is disallowed
         echo "\e[91m[ERROR] \e[39mCan't crawl \e[36m".$crawling[0]."\n"."\e[91m[ERROR] \e[39mReason: Disallowed"."\n";
-        echo "\e[91m[NOTICE] \e[39mIf this is your first time running the crawler"."\n";
+        echo "\e[91m[NOTICE] \e[39mIf this is your first time running the crawler change the URL located in the tocrawl.txt file"."\n";
     }
 ?>
