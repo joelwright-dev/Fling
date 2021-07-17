@@ -8,7 +8,7 @@ We've all had our fair share of search engines and the terror they can be to use
 
 Install the latest version of [php8.0](https://www.php.net/downloads.php).
 
-### Ubuntu/Debian distributions
+### Ubuntu/Debian Distributions
 
 ```bash
 sudo apt install software-properties-common
