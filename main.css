@@ -54,3 +54,44 @@ ul.list-style-none li a {
 .w-30px {
     width: 30px
 }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+}
+
+.flinglogo-l {
+    width: 600px;
+    margin: 30px;
+}
+
+.flinglogo-s {
+    width: 150px;
+    margin: 30px;
+}
+
+.vertical-center {
+    min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+    min-height: 100vh; /* These two lines are counted as one :-)       */
+  
+    display: flex;
+    align-items: center;
+  }
+
+.paddtop
+{
+    padding-top: 200px;
+}
+
+.searchform {
+    width: 1000px;
+}
+
+.fullwidthtext {
+    width: 900px;
+}
+
+input[type=text]
+{
+    height: 40px;
+}
